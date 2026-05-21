@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AssetOps - Enterprise Multi-Site Asset Tracking Platform</title>
+<!-- Microsoft Authentication Engine Ecosystem -->
+<script src="https://alcdn.msauth.net/browser/2.35.0/js/msal-browser.min.js"></script>
+<style>
+  :root {
+    --bg-main: #061325;
+    --bg-surface: #0b1f3b;
+    --bg-card: #0f2746;
+    --accent: #1faf9a;
+    --accent-hover: #179381;
+    --text-main: #ffffff;
+    --text-muted: #94a3b8;
+    --text-light: #cbd5e1;
+    --status-green: #10b981;
+    --status-green-bg: rgba(16, 185, 129, 0.1);
+    --status-blue: #3b82f6;
+    --status-blue-bg: rgba(59, 130, 246, 0.1);
+    --status-yellow: #f59e0b;
+    --status-yellow-bg: rgba(245, 158, 11, 0.1);
+    --danger: #ef4444;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg-main);
+    color: var(--text-main);
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Header Controls */
+  header {
+    padding: 24px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .logo-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+
+  .logo-text {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
+  .btn-outline {
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+  }
+  .btn-outline:hover { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.3); }
+
+  .btn-ms {
+    background: #ffffff;
+    color: #242424;
+    border: 1px solid #cbd5e1;
+  }
+  .btn-ms:hover { background: #f8fafc; border-color: #94a3b8; }
+
+  /* Identity Badges */
+  .user-profile {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 6px 14px;
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .user-avatar {
+    width: 26px;
+    height: 26px;
+    background: var(--accent);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+  }
+
+  /* Premium Hero Layout */
+  .hero {
+    padding: 90px 0 60px 0;
+    text-align: center;
+    max-width: 950px;
+    margin: 0 auto;
+  }
+
+  .hero-tagline {
+    background: rgba(31, 175, 154, 0.1);
+    color: var(--accent);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    display: inline-block;
+    margin-bottom: 24px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .hero h1 {
+    font-size: 62px;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -1.5px;
+    margin-bottom: 24px;
+  }
+
+  .hero p {
+    color: var(--text-light);
+    font-size: 21px;
+    line-height: 1.6;
+    margin-bottom: 40px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Social Proof Bar */
+  .social-proof {
+    padding: 24px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .social-proof span {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 16px;
+  }
+  .logos-flex {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 48px;
+    flex-wrap: wrap;
+    opacity: 0.5;
+  }
+  .logos-flex font { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; color: var(--text-light); }
+
+  /* Industry Pain Points Section */
+  .pain-points-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-top: 40px;
+  }
+
+  .pain-card {
+    background: rgba(239, 68, 68, 0.02);
+    border: 1px solid rgba(239, 68, 68, 0.1);
+    border-radius: 12px;
+    padding: 32px;
+    text-align: left;
+    transition: transform 0.2s;
+  }
+  .pain-card:hover { transform: translateY(-2px); }
+
+  .pain-card h3 {
+    color: var(--text-main);
+    font-size: 19px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .pain-card p {
+    color: var(--text-muted);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* Core Features Breakdown VS Old Ways */
+  .vs-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: center;
+    margin-top: 60px;
+  }
+  @media (max-width: 768px) { .vs-section { grid-template-columns: 1fr; gap: 32px; } }
+
+  .vs-box {
+    background: var(--bg-card);
+    padding: 32px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .vs-box.bad { border-left: 4px solid var(--danger); }
+  .vs-box.good { border-left: 4px solid var(--accent); }
+  
+  .vs-box h4 { font-size: 18px; margin-bottom: 16px; font-weight: 700; }
+  .vs-list { list-style: none; }
+  .vs-list li { font-size: 15px; margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start; color: var(--text-light); }
+
+  /* Global Sections */
+  .section { padding: 100px 0; }
+  .section-alt { background: var(--bg-surface); }
+  
+  .section-title {
+    font-size: 40px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .section-subtitle {
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 56px;
+    font-size: 19px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+  }
+
+  /* Interactive Live Simulator Dashboard Frame */
+  .dashboard-window {
+    background: #040d1a;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+  }
+
+  .dashboard-header {
+    background: #081629;
+    padding: 18px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .site-selector-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .site-select {
+    background: var(--bg-card);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .tabs { display: flex; gap: 8px; }
+  .tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .tab-btn.active { background: rgba(31, 175, 154, 0.15); color: var(--accent); }
+
+  .dashboard-content { padding: 24px; overflow-x: auto; }
+  
+  .real-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    min-width: 650px;
+  }
+
+  .real-table th {
+    padding: 14px 16px;
+    color: var(--text-muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .real-table td {
+    padding: 18px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: 14px;
+    color: var(--text-light);
+  }
+
+  .badge {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .badge-success { background: var(--status-green-bg); color: var(--status-green); }
+  .badge-info { background: var(--status-blue-bg); color: var(--status-blue); }
+  .badge-warn { background: var(--status-yellow-bg); color: var(--status-yellow); }
+
+  /* Pricing System Elements */
+  .pricing-toggle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 48px;
+    font-weight: 600;
+  }
+
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+  }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: var(--bg-card);
+    transition: .3s;
+    border-radius: 34px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 18px; width: 18px;
+    left: 3px; bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+  }
+  input:checked + .slider { background-color: var(--accent); }
+  input:checked + .slider:before { transform: translateX(24px); }
+
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+  }
+
+  .price-card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 44px 32px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  
+  .price-card.featured {
+    border-color: var(--accent);
+    box-shadow: 0 15px 35px -10px rgba(31, 175, 154, 0.25);
+  }
+
+  .featured-tag {
+    position: absolute;
+    top: -12px; left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent);
+    color: white;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+
+  .price-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+  .price-amount { font-size: 44px; font-weight: 800; margin-bottom: 4px; letter-spacing: -1px; }
+  .price-period { color: var(--text-muted); font-size: 14px; margin-bottom: 28px; }
+  
+  .feature-list { list-style: none; margin-bottom: 36px; }
+  .feature-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--text-light);
+    margin-bottom: 14px;
+  }
+
+  /* Interactive FAQ Accordion Accordance System */
+  .faq-container { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+  .faq-item { background: var(--bg-card); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; overflow: hidden; }
+  .faq-question { padding: 20px 24px; font-weight: 700; font-size: 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+  .faq-answer { padding: 0 24px; max-height: 0; overflow: hidden; transition: all 0.3s cubic-bezier(0,1,0,1); color: var(--text-muted); font-size: 15px; line-height: 1.6; }
+  .faq-item.open .faq-answer { max-height: 1000px; padding: 0 24px 20px 24px; }
+  .faq-icon { transition: transform 0.2s; font-weight: 300; font-size: 20px; }
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+
+  /* Registration Form Components */
+  .form-container {
+    max-width: 520px;
+    margin: 40px auto 0 auto;
+    background: var(--bg-card);
+    padding: 36px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+  }
+  .form-group { margin-bottom: 22px; text-align: left; }
+  .form-group label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: var(--text-light); }
+  .form-group input, .form-group select {
+    width: 100%;
+    padding: 14px;
+    background: #040d1a;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    color: white;
+    outline: none;
+    font-size: 14px;
+    transition: border-color 0.2s;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
+  .success-banner {
+    display: none;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid var(--status-green);
+    color: #fff;
+    padding: 18px;
+    border-radius: 8px;
+    text-align: center;
+    margin-top: 20px;
+    font-weight: 600;
+  }
+
+  footer {
+    padding: 60px 0;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    margin-top: 40px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <a href="#" class="logo-wrapper">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#1faf9a"/>
+        <path opacity="0.8" d="M2 17L12 22L22 17" stroke="#1faf9a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path opacity="0.5" d="M2 12L12 17L22 12" stroke="#1faf9a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="logo-text">AssetOps</span>
+    </a>
+
+    <div class="nav-actions">
+      <a class="btn btn-outline" href="#solutions">The Problem</a>
+      <a class="btn btn-outline" href="#pricing">Pricing</a>
+      
+      <button class="btn btn-ms" id="microsoftSignInBtn" onclick="executeMicrosoftLogin()">
+        <svg style="width:16px; height:16px;" viewBox="0 0 23 23">
+          <path d="M0 0h11v11H0z" fill="#f25022"/>
+          <path d="M12 0h11v11H12z" fill="#7fba00"/>
+          <path d="M0 12h11v11H0z" fill="#00a4ef"/>
+          <path d="M12 12h11v11H12z" fill="#ffb900"/>
+        </svg>
+        Sign In with Microsoft
+      </button>
+
+      <div class="user-profile" id="userProfileBadge">
+        <div class="user-avatar" id="userInitial">M</div>
+        <span id="userNameField" style="font-size:14px; font-weight:600; color:#fff;">Corporate User</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Premium Hero Block -->
+  <section class="hero">
+    <div class="hero-tagline">Stop Bleeding Project Capital</div>
+    <h1>Stop losing field gear to buried, broken Excel sheets</h1>
+    <p>
+      Relying on text threads, sticky notes, and fragile tracking logs causes costly project delays. Move away from ghost inventory risks and gain absolute multi-regional operational oversight.
+    </p>
+    <div style="display:flex; justify-content:center; gap:16px; flex-wrap:wrap; margin-bottom: 56px;">
+      <a class="btn" href="#trial-form">Ditch the Spreadsheets Now</a>
+      <button class="btn btn-outline" onclick="executeMicrosoftLogin()">Deploy with Entra ID</button>
+    </div>
+
+    <!-- Social Proof Bar -->
+    <div class="social-proof">
+      <span>Trusted by regional infrastructure crews & field teams worldwide</span>
+      <div class="logos-flex">
+        <font>■ APEX BUILDERS</font>
+        <font>▲ METRO INFRA</font>
+        <font>◆ PACIFIC POWER</font>
+        <font>● CORE CONTRACTING</font>
+      </div>
+    </div>
+
+    <!-- Industry Problem Framework -->
+    <div class="pain-points-grid" id="solutions">
+      <div class="pain-card">
+        <h3>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2.5"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          Outdated Excel Chaos
+        </h3>
+        <p>Version control drops off the moment sheets are updated offline in the field. One wrong cell change can wipe out an entire tracking ledger.</p>
+      </div>
+      <div class="pain-card">
+        <h3>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2M9 9h.01M15 9h.01"/></svg>
+          Ghost Inventory Losses
+        </h3>
+        <p>Untracked tools slip away into sub-contractor trucks or sit forgotten on closed sites, leading to unnecessary, expensive double-purchasing.</p>
+      </div>
+      <div class="pain-card">
+        <h3>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Costly Project Idle Time
+        </h3>
+        <p>Crews stand around idle while managers spend hours calling field houses trying to figure out who checked out a critical generator or drill kit.</p>
+      </div>
+    </div>
+
+    <!-- Contrasting System View (The "Why Choose Us") -->
+    <div class="vs-section">
+      <div class="vs-box bad">
+        <h4>The Old Way (Legacy Mess)</h4>
+        <ul class="vs-list">
+          <li>❌ "Who has the key to the trailer?" text loops.</li>
+          <li>❌ Multiple spreadsheet versions saved as final_v2_edit.xlsx.</li>
+          <li>❌ Paying rental extensions on items already sitting in a yard.</li>
+        </ul>
+      </div>
+      <div class="vs-box good">
+        <h4>The AssetOps Strategy</h4>
+        <ul class="vs-list">
+          <li>M Single centralized cloud log viewable by any site worker.</li>
+          <li>M Instant state verification synced straight with Entra ID profiles.</li>
+          <li>M Real-time site telemetry reporting live custody changes.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- LIVE TELEMETRY SIMULATOR -->
+<section class="section section-alt">
+  <div class="container">
+    <h2 class="section-title">The Real-Time Solution</h2>
+    <p class="section-subtitle">Ditch the manual entry fields entirely. Provide field teams and project stakeholders with an automated, live unified dashboard console.</p>
+
+    <div class="dashboard-window">
+      <div class="dashboard-header">
+        <div class="site-selector-wrapper">
+          <span>Active Hub View:</span>
+          <select class="site-select" id="siteToggle" onchange="switchSiteData()">
+            <option value="all">All Sites Unified</option>
+            <option value="sydney">Sydney Metro Yard</option>
+            <option value="melbourne">Melbourne West Depot</option>
+            <option value="brisbane">Brisbane Airport Hub</option>
+          </select>
+        </div>
+        <div class="tabs">
+          <button class="tab-btn active">Asset Fleet Matrix</button>
+        </div>
+      </div>
+
+      <div class="dashboard-content">
+        <table class="real-table">
+          <thead>
+            <tr>
+              <th>Asset Tracking Tag</th>
+              <th>Item Specification</th>
+              <th>Assigned Site Hub</th>
+              <th>Operational Status</th>
+            </tr>
+          </thead>
+          <tbody id="dashboard-rows">
+            <!-- Dynamic Telemetry Rows -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING TIERS -->
+<section class="section" id="pricing">
+  <div class="container">
+    <h2 class="section-title">Transparent Pricing That Scales</h2>
+    <p class="section-subtitle">Every plan starts with a full-access 14-day free trial. Cancel anytime.</p>
+
+    <div class="pricing-toggle">
+      <span>Monthly Billing</span>
+      <label class="switch"><input type="checkbox" id="billingToggle" onchange="toggleBilling()"><span class="slider"></span></label>
+      <span>Annual Billing <span style="color:var(--accent); font-weight:bold; font-size:12px;">(Save 20%)</span></span>
+    </div>
+
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-title">Starter Pack</div>
+        <div class="price-amount" id="p1">$10</div>
+        <div class="price-period">per month</div>
+        <ul class="feature-list">
+          <li>Up to 100 Assets Max</li>
+          <li><strong>Up to 2 Active Sites</strong></li>
+          <li>Standard Logs & Audits</li>
+          <li>14-day risk free trial</li>
+        </ul>
+        <a class="btn btn-outline" style="margin-top:auto;" href="#trial-form">Launch Trial</a>
+      </div>
+
+      <div class="price-card featured">
+        <div class="featured-tag">Most Popular</div>
+        <div class="price-title">Growth Track</div>
+        <div class="price-amount" id="p2">$20</div>
+        <div class="price-period">per month</div>
+        <ul class="feature-list">
+          <li>Up to 300 Assets Max</li>
+          <li><strong>Up to 5 Active Sites</strong></li>
+          <li>Priority Fleet Support</li>
+          <li>Advanced History Export</li>
+        </ul>
+        <a class="btn" style="margin-top:auto;" href="#trial-form">Launch Trial</a>
+      </div>
+
+      <div class="price-card">
+        <div class="price-title">Pro Scale</div>
+        <div class="price-amount" id="p3">$50</div>
+        <div class="price-period">per month</div>
+        <ul class="feature-list">
+          <li>Up to 500 Assets Max</li>
+          <li><strong>Up to 15 Active Sites</strong></li>
+          <li>Custom Webhooks & API</li>
+          <li>Dedicated Account Manager</li>
+        </ul>
+        <a class="btn btn-outline" style="margin-top:auto;" href="#trial-form">Launch Trial</a>
+      </div>
+
+      <div class="price-card" style="background: linear-gradient(135deg, var(--bg-card), #13335c);">
+        <div class="price-title" style="color: var(--accent);">Custom Hub</div>
+        <div class="price-amount">Custom</div>
+        <div class="price-period">Tailored Billing</div>
+        <ul class="feature-list">
+          <li><strong>500+ Assets (Unlimited)</strong></li>
+          <li><strong>Unlimited Regional Sites</strong></li>
+          <li>SLA Performance Guarantees</li>
+          <li>On-site Deployment Crew</li>
+        </ul>
+        <a class="btn" style="margin-top:auto; background: #fff; color: var(--bg-main);" href="#trial-form">Contact Sales</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INTERACTIVE FAQ SECTION -->
+<section class="section section-alt">
+  <div class="container">
+    <h2 class="section-title">Frequently Asked Questions</h2>
+    <p class="section-subtitle">Everything you need to know about shifting from manual tracking systems to automated asset environments.</p>
+    
+    <div class="faq-container">
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>How hard is it to import our current Excel tracking sheets?</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+          Extremely easy. You can upload any standard legacy .csv or .xlsx asset list file directly into our workspace loader to build your live matrix configuration in under two minutes.
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>Does this require field personnel to download separate apps?</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+          No separate installations are required. The AssetOps asset engine platform is a light, mobile-responsive web utility application that fields beautifully inside any phone or tablet browser instantly via simple QR scans.
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>How does the Microsoft Entra ID connection protect our field profiles?</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+          By utilizing your native corporate Microsoft login keys, we guarantee complete identity authentication verification. No team member has to manage standalone credentials, and compliance history maps back directly to structural corporate accounts.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SANDBOX REGISTRATION -->
+<section class="section" id="trial-form">
+  <div class="container" style="text-align: center;">
+    <h2>Initiate Your Active Environment Setup</h2>
+    <p style="color: var(--text-muted); margin-bottom: 24px;">Configure your telemetry system settings. No card required.</p>
+    
+    <div class="form-container">
+      <form id="pilotRegistration" onsubmit="handleRegistration(event)">
+        <div class="form-group">
+          <label>Company Legal Identity</label>
+          <input type="text" placeholder="e.g. Infrastructure Developments Ltd" required />
+        </div>
+        <div class="form-group">
+          <label>Corporate Contact Coordinates</label>
+          <input type="email" id="formEmail" placeholder="name@company.com" required />
+        </div>
+        <div class="form-group">
+          <label>Select Projected Volume Capacity</label>
+          <select required>
+            <option value="1">Starter (100 assets / 2 sites)</option>
+            <option value="2">Growth (300 assets / 5 sites)</option>
+            <option value="3">Pro Scale (500 assets / 15 sites)</option>
+            <option value="4">Custom Enterprise (Unlimited assets & sites)</option>
+          </select>
+        </div>
+        <button type="submit" class="btn" style="width:100%; justify-content:center;">Initialize Sandbox Environment</button>
+      </form>
+      <div class="success-banner" id="successBanner">
+        <strong>Setup Stream Initialized!</strong> Environment deployment configuration keys routing directly to your profile coordinates.
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+  <footer>
+    © 2026 AssetOps — Multi-Site Industrial Framework Routing. All tracking records authenticated.
+  </footer>
+</div>
+
+<script>
+  // IDENTITY ENGINE CONFIG
+  const msalConfig = {
+    auth: {
+      clientId: "PASTE_YOUR_ENTRA_CLIENT_ID_HERE",
+      authority: "https://login.microsoftonline.com/common",
+      redirectUri: window.location.origin
+    },
+    cache: { cacheLocation: "sessionStorage", storeAuthStateInCookie: false }
+  };
+
+  const msalClient = new msal.PublicClientApplication(msalConfig);
+
+  async function executeMicrosoftLogin() {
+    try {
+      const loginRequest = { scopes: ["User.Read"] };
+      const response = await msalClient.loginPopup(loginRequest);
+      handleLoginSuccess(response.account);
+    } catch (error) {
+      console.warn("Microsoft Identity Integration Flow Postponed:", error);
+    }
+  }
+
+  function handleLoginSuccess(account) {
+    document.getElementById("microsoftSignInBtn").style.display = "none";
+    document.getElementById("userProfileBadge").style.display = "flex";
+    
+    const displayName = account.name || account.username;
+    document.getElementById("userNameField").innerText = displayName;
+    document.getElementById("userInitial").innerText = displayName.charAt(0).toUpperCase();
+
+    if (document.getElementById("formEmail")) {
+      document.getElementById("formEmail").value = account.username;
+    }
+  }
+
+  async function checkActiveSession() {
+    const activeAccounts = msalClient.getAllAccounts();
+    if (activeAccounts && activeAccounts.length > 0) {
+      handleLoginSuccess(activeAccounts[0]);
+    }
+  }
+
+  // Live Simulation Dashboard Data 
+  const masterAssets = [
+    { tag: "#EQ-409", name: "Caterpillar Diesel Generator", site: "Sydney Metro Yard", loc: "sydney", status: "In Use", badge: "badge-success" },
+    { tag: "#TL-882", name: "Hilti Rotary Hammer Drill", site: "Brisbane Airport Hub", loc: "brisbane", status: "Available", badge: "badge-info" },
+    { tag: "#EQ-104", name: "Topcon Laser Level Kit FX", site: "Melbourne West Depot", loc: "melbourne", status: "Calibration", badge: "badge-warn" },
+    { tag: "#TL-021", name: "Husqvarna Concrete Core Saw", site: "Sydney Metro Yard", loc: "sydney", status: "Available", badge: "badge-info" },
+    { tag: "#EQ-771", name: "DJI Matrice Surveying Drone", site: "Brisbane Airport Hub", loc: "brisbane", status: "In Use", badge: "badge-success" },
+    { tag: "#TL-554", name: "High-Output Fleet Compressor", site: "Melbourne West Depot", loc: "melbourne", status: "In Use", badge: "badge-success" }
+  ];
+
+  function switchSiteData() {
+    const filter = document.getElementById("siteToggle").value;
+    const targetBody = document.getElementById("dashboard-rows");
+    targetBody.innerHTML = "";
+    
+    const elementsToRender = filter === "all" ? masterAssets : masterAssets.filter(item => item.loc === filter);
+    
+    elementsToRender.forEach(asset => {
+      targetBody.innerHTML += `<tr>
+        <td style="font-family: monospace; color: var(--accent); font-weight:700;">${asset.tag}</td>
+        <td style="font-weight:600; color:#fff;">${asset.name}</td>
+        <td>${asset.site}</td>
+        <td><span class="badge ${asset.badge}">${asset.status}</span></td>
+      </tr>`;
+    });
+  }
+
+  function toggleBilling() {
+    const isAnnual = document.getElementById("billingToggle").checked;
+    document.getElementById("p1").innerText = isAnnual ? "$8" : "$10";
+    document.getElementById("p2").innerText = isAnnual ? "$16" : "$20";
+    document.getElementById("p3").innerText = isAnnual ? "$40" : "$50";
+  }
+
+  function toggleFaq(element) {
+    const item = element.parentElement;
+    item.classList.toggle("open");
+  }
+
+  function handleRegistration(e) {
+    e.preventDefault();
+    document.getElementById("pilotRegistration").style.display = "none";
+    document.getElementById("successBanner").style.display = "block";
+  }
+
+  window.onload = function() {
+    switchSiteData();
+    checkActiveSession();
+  };
+</script>
+</body>
+</html>
