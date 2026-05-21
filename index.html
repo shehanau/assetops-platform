@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AssetOps - Enterprise Asset Tracking Platform</title>
+<!-- Microsoft Authentication Engine Ecosystem -->
+<script src="https://alcdn.msauth.net/browser/2.35.0/js/msal-browser.min.js"></script>
+<style>
+  :root {
+    --bg-main: #061325;
+    --bg-surface: #0b1f3b;
+    --bg-card: #0f2746;
+    --accent: #1faf9a;
+    --accent-hover: #179381;
+    --text-main: #ffffff;
+    --text-muted: #94a3b8;
+    --text-light: #cbd5e1;
+    --status-green: #10b981;
+    --status-green-bg: rgba(16, 185, 129, 0.1);
+    --status-blue: #3b82f6;
+    --status-blue-bg: rgba(59, 130, 246, 0.1);
+    --status-yellow: #f59e0b;
+    --status-yellow-bg: rgba(245, 158, 11, 0.1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg-main);
+    color: var(--text-main);
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Header Controls with Visual Logo Alignment */
+  header {
+    padding: 24px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .logo-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+
+  .logo-text {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
+  .btn-outline {
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+  }
+  .btn-outline:hover { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.3); }
+
+  .btn-ms {
+    background: #ffffff;
+    color: #242424;
+    border: 1px solid #cbd5e1;
+  }
+  .btn-ms:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+  }
+
+  /* Entra Identity Integration Profile Badges */
+  .user-profile {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 6px 14px;
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .user-avatar {
+    width: 26px;
+    height: 26px;
+    background: var(--accent);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+  }
+
+  /* Hero */
+  .hero {
+    padding: 100px 0 80px 0;
+    text-align: center;
+    max-width: 850px;
+    margin: 0 auto;
+  }
+
+  .hero h1 {
+    font-size: 56px;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -1.5px;
+    margin-bottom: 24px;
+  }
+
+  .hero p {
+    color: var(--text-light);
+    font-size: 20px;
+    line-height: 1.6;
+    margin-bottom: 40px;
+  }
+
+  /* Sections */
+  .section { padding: 100px 0; }
+  .section-alt { background: var(--bg-surface); }
+  
+  .section-title {
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .section-subtitle {
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 48px;
+    font-size: 18px;
+  }
+
+  /* Dashboard Framework Window */
+  .dashboard-window {
+    background: #040d1a;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+  }
+
+  .dashboard-header {
+    background: #081629;
+    padding: 16px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .site-selector-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .site-select {
+    background: var(--bg-card);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .tabs { display: flex; gap: 8px; }
+  .tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .tab-btn.active { background: rgba(31, 175, 154, 0.15); color: var(--accent); }
+
+  .dashboard-content { padding: 24px; overflow-x: auto; }
+  
+  .real-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    min-width: 600px;
+  }
+
+  .real-table th {
+    padding: 12px 16px;
+    color: var(--text-muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .real-table td {
+    padding: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: 14px;
+    color: var(--text-light);
+  }
+
+  .badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .badge-success { background: var(--status-green-bg); color: var(--status-green); }
+  .badge-info { background: var(--status-blue-bg); color: var(--status-blue); }
+  .badge-warn { background: var(--status-yellow-bg); color: var(--status-yellow); }
+
+  /* Pricing Matrix Panels */
+  .pricing-toggle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+  }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: var(--bg-card);
+    transition: .3s;
+    border-radius: 34px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 18px; width: 18px;
+    left: 3px; bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+  }
+  input:checked + .slider { background-color: var(--accent); }
+  input:checked + .slider:before { transform: translateX(24px); }
+
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+  }
+
+  .price-card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 40px 32px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  
+  .price-card.featured {
+    border-color: var(--accent);
+    box-shadow: 0 10px 30px -10px rgba(31, 175, 154, 0.2);
+  }
+
+  .featured-tag {
+    position: absolute;
+    top: -12px; left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .price-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+  .price-amount { font-size: 40px; font-weight: 800; margin-bottom: 4px; }
+  .price-period { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
+  
+  .feature-list { list-style: none; margin-bottom: 32px; }
+  .feature-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--text-light);
+    margin-bottom: 12px;
+  }
+
+  /* Form Container */
+  .form-container {
+    max-width: 500px;
+    margin: 40px auto 0 auto;
+    background: var(--bg-card);
+    padding: 32px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .form-group { margin-bottom: 20px; text-align: left; }
+  .form-group label { display: block; margin-bottom: 8px; font-size: 14px; color: var(--text-light); }
+  .form-group input, .form-group select {
+    width: 100%;
+    padding: 12px;
+    background: #040d1a;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    color: white;
+    outline: none;
+  }
+  .success-banner {
+    display: none;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid var(--status-green);
+    color: #fff;
+    padding: 16px;
+    border-radius: 8px;
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  footer {
+    padding: 60px 0;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <!-- Vector Integrated Logo Interface Anchor -->
+    <a href="#" class="logo-wrapper">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#1faf9a"/>
+        <path opacity="0.8" d="M2 17L12 22L22 17" stroke="#1faf9a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path opacity="0.5" d="M2 12L12 17L22 12" stroke="#1faf9a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="logo-text">AssetOps</span>
+    </a>
+
+    <div class="nav-actions">
+      <a class="btn btn-outline" href="#pricing">View Pricing</a>
+      
+      <!-- Microsoft Seamless Identity Action Gateway -->
+      <button class="btn btn-ms" id="microsoftSignInBtn" onclick="executeMicrosoftLogin()">
+        <svg style="width:16px; height:16px;" viewBox="0 0 23 23">
+          <path d="M0 0h11v11H0z" fill="#f25022"/>
+          <path d="M12 0h11v11H12z" fill="#7fba00"/>
+          <path d="M0 12h11v11H0z" fill="#00a4ef"/>
+          <path d="M12 12h11v11H12z" fill="#ffb900"/>
+        </svg>
+        Sign In with Microsoft
+      </button>
+
+      <!-- Authenticated Corporate Profile State Token Display -->
+      <div class="user-profile" id="userProfileBadge">
+        <div class="user-avatar" id="userInitial">M</div>
+        <span id="userNameField" style="font-size:14px; font-weight:600; color:#fff;">Corporate User</span>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <h1>Scale visibility across 1 or 100+ project sites</h1>
+    <p>
+      Track logistics, equipment, and custody changes in real time. Designed for modern infrastructure developers, contractors, and multi-regional enterprise teams.
+    </p>
+    <div style="display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
+      <a class="btn" href="#trial-form">Start Free Trial</a>
+      <button class="btn btn-outline" onclick="executeMicrosoftLogin()">Deploy with Entra ID</button>
+    </div>
+  </section>
+</div>
+
+<!-- LIVE TELEMETRY DASHBOARD -->
+<section class="section section-alt">
+  <div class="container">
+    <h2 class="section-title">Live Multi-Site Telemetry</h2>
+    <p class="section-subtitle">Simulate asset mapping controls across deep operational fields.</p>
+
+    <div class="dashboard-window">
+      <div class="dashboard-header">
+        <div class="site-selector-wrapper">
+          <span>Active Hub View:</span>
+          <select class="site-select" id="siteToggle" onchange="switchSiteData()">
+            <option value="all">All Sites Unified</option>
+            <option value="sydney">Sydney Metro Yard</option>
+            <option value="melbourne">Melbourne West Depot</option>
+            <option value="brisbane">Brisbane Airport Hub</option>
+          </select>
+        </div>
+        <div class="tabs">
+          <button class="tab-btn active" id="tab-fleet">Asset Fleet</button>
+        </div>
+      </div>
+
+      <div class="dashboard-content">
+        <table class="real-table">
+          <thead>
+            <tr>
+              <th>Asset Tracking Tag</th>
+              <th>Item Specification</th>
+              <th>Assigned Site Hub</th>
+              <th>Operational Status</th>
+            </tr>
+          </thead>
+          <tbody id="dashboard-rows">
+            <!-- Rendered Reactively in Runtime -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING TIERS -->
+<section class="section" id="pricing">
+  <div class="container">
+    <h2 class="section-title">Transparent Pricing That Scales</h2>
+    <p class="section-subtitle">Every plan starts with a full-access 14-day free trial. Cancel anytime.</p>
+
+    <div class="pricing-toggle">
+      <span>Monthly</span>
+      <label class="switch"><input type="checkbox" id="billingToggle" onchange="toggleBilling()"><span class="slider"></span></label>
+      <span>Annual <span style="color:var(--accent); font-weight:bold; font-size:12px;">(Save 20%)</span></span>
+    </div>
+
+    <div class="pricing-grid">
+      <!-- STARTER -->
+      <div class="price-card">
+        <div class="price-title">Starter Pack</div>
+        <div class="price-amount" id="p1">$10</div>
+        <div class="price-period">per month</div>
+        <ul class="feature-list">
+          <li>Up to 100 Assets Max</li>
+          <li><strong>Up to 2 Active Sites</strong></li>
+          <li>Standard Logs & Audits</li>
+          <li>14-day risk free trial</li>
+        </ul>
+        <a class="btn btn-outline" style="margin-top:auto;" href="#trial-form">Launch Trial</a>
+      </div>
+
+      <!-- MID RANGE -->
+      <div class="price-card featured">
+        <div class="featured-tag">Most Popular</div>
+        <div class="price-title">Growth Track</div>
+        <div class="price-amount" id="p2">$20</div>
+        <div class="price-period">per month</div>
+        <ul class="feature-list">
+          <li>Up to 300 Assets Max</li>
+          <li><strong>Up to 5 Active Sites</strong></li>
+          <li>Priority Fleet Support</li>
+          <li>Advanced History Export</li>
+        </ul>
+        <a class="btn" style="margin-top:auto;" href="#trial-form">Launch Trial</a>
+      </div>
+
+      <!-- ENTERPRISE BASE -->
+      <div class="price-card">
+        <div class="price-title">Pro Scale</div>
+        <div class="price-amount" id="p3">$50</div>
+        <div class="price-period">per month</div>
+        <ul class="feature-list">
+          <li>Up to 500 Assets Max</li>
+          <li><strong>Up to 15 Active Sites</strong></li>
+          <li>Custom Webhooks & API</li>
+          <li>Dedicated Account Manager</li>
+        </ul>
+        <a class="btn btn-outline" style="margin-top:auto;" href="#trial-form">Launch Trial</a>
+      </div>
+
+      <!-- ENTERPRISE CUSTOM -->
+      <div class="price-card" style="background: linear-gradient(135deg, var(--bg-card), #13335c);">
+        <div class="price-title" style="color: var(--accent);">Custom Hub</div>
+        <div class="price-amount">Custom</div>
+        <div class="price-period">Tailored Billing</div>
+        <ul class="feature-list">
+          <li><strong>500+ Assets (Unlimited)</strong></li>
+          <li><strong>Unlimited Regional Sites</strong></li>
+          <li>SLA Performance Guarantees</li>
+          <li>On-site Deployment Crew</li>
+        </ul>
+        <a class="btn" style="margin-top:auto; background: #fff; color: var(--bg-main);" href="#trial-form">Contact Sales</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PILOT SANDBOX REGISTRATION -->
+<section class="section section-alt" id="trial-form">
+  <div class="container" style="text-align: center;">
+    <h2>Initiate Your Active Environment Setup</h2>
+    <p style="color: var(--text-muted); margin-bottom: 24px;">Configure your telemetry system settings. No card required.</p>
+    
+    <div class="form-container">
+      <form id="pilotRegistration" onsubmit="handleRegistration(event)">
+        <div class="form-group">
+          <label>Company Legal Identity</label>
+          <input type="text" placeholder="e.g. Infrastructure Developments Ltd" required />
+        </div>
+        <div class="form-group">
+          <label>Corporate Contact Coordinates</label>
+          <input type="email" id="formEmail" placeholder="name@company.com" required />
+        </div>
+        <div class="form-group">
+          <label>Select Projected Volume Capacity</label>
+          <select required>
+            <option value="1">Starter (100 assets / 2 sites)</option>
+            <option value="2">Growth (300 assets / 5 sites)</option>
+            <option value="3">Pro Scale (500 assets / 15 sites)</option>
+            <option value="4">Custom Enterprise (Unlimited assets & sites)</option>
+          </select>
+        </div>
+        <button type="submit" class="btn" style="width:100%; justify-content:center;">Initialize Sandbox Environment</button>
+      </form>
+      <div class="success-banner" id="successBanner">
+        <strong>Setup Stream Initialized!</strong> Environment deployment configuration keys routing directly to your profile coordinates.
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+  <footer>
+    © 2026 AssetOps — Multi-Site Industrial Framework Routing. All tracking records authenticated.
+  </footer>
+</div>
+
+<script>
+  // CONFIGURATION INTERFACES FOR CORPORATE TENANT CLIENT KEYS
+  const msalConfig = {
+    auth: {
+      clientId: "PASTE_YOUR_ENTRA_CLIENT_ID_HERE", // Grab from Azure App Portal
+      authority: "https://login.microsoftonline.com/common", // Set your specific tenant directory ID if restricted
+      redirectUri: window.location.origin
+    },
+    cache: {
+      cacheLocation: "sessionStorage",
+      storeAuthStateInCookie: false
+    }
+  };
+
+  const msalClient = new msal.PublicClientApplication(msalConfig);
+
+  async function executeMicrosoftLogin() {
+    try {
+      const loginRequest = { scopes: ["User.Read"] };
+      const response = await msalClient.loginPopup(loginRequest);
+      handleLoginSuccess(response.account);
+    } catch (error) {
+      console.warn("Microsoft Entra Authorization Interface Postponed:", error);
+    }
+  }
+
+  function handleLoginSuccess(account) {
+    document.getElementById("microsoftSignInBtn").style.display = "none";
+    document.getElementById("userProfileBadge").style.display = "flex";
+    
+    const displayName = account.name || account.username;
+    document.getElementById("userNameField").innerText = displayName;
+    document.getElementById("userInitial").innerText = displayName.charAt(0).toUpperCase();
+
+    // Contextually optimize user experience by auto-populating email fields
+    if (document.getElementById("formEmail")) {
+      document.getElementById("formEmail").value = account.username;
+    }
+  }
+
+  async function checkActiveSession() {
+    const activeAccounts = msalClient.getAllAccounts();
+    if (activeAccounts && activeAccounts.length > 0) {
+      handleLoginSuccess(activeAccounts[0]);
+    }
+  }
+
+  // Dashboard Data Models
+  const masterAssets = [
+    { tag: "#EQ-409", name: "Caterpillar Diesel Generator", site: "Sydney Metro Yard", loc: "sydney", status: "In Use", badge: "badge-success" },
+    { tag: "#TL-882", name: "Hilti Rotary Hammer Drill", site: "Brisbane Airport Hub", loc: "brisbane", status: "Available", badge: "badge-info" },
+    { tag: "#EQ-104", name: "Topcon Laser Level Kit FX", site: "Melbourne West Depot", loc: "melbourne", status: "Calibration", badge: "badge-warn" },
+    { tag: "#TL-021", name: "Husqvarna Concrete Core Saw", site: "Sydney Metro Yard", loc: "sydney", status: "Available", badge: "badge-info" },
+    { tag: "#EQ-771", name: "DJI Matrice Surveying Drone", site: "Brisbane Airport Hub", loc: "brisbane", status: "In Use", badge: "badge-success" },
+    { tag: "#TL-554", name: "High-Output Fleet Compressor", site: "Melbourne West Depot", loc: "melbourne", status: "In Use", badge: "badge-success" }
+  ];
+
+  function switchSiteData() {
+    const filter = document.getElementById("siteToggle").value;
+    const targetBody = document.getElementById("dashboard-rows");
+    targetBody.innerHTML = "";
+    
+    const elementsToRender = filter === "all" ? masterAssets : masterAssets.filter(item => item.loc === filter);
+    
+    elementsToRender.forEach(asset => {
+      targetBody.innerHTML += `<tr>
+        <td style="font-family: monospace; color: var(--accent);">${asset.tag}</td>
+        <td style="font-weight:600; color:#fff;">${asset.name}</td>
+        <td>${asset.site}</td>
+        <td><span class="badge ${asset.badge}">${asset.status}</span></td>
+      </tr>`;
+    });
+  }
+
+  function toggleBilling() {
+    const isAnnual = document.getElementById("billingToggle").checked;
+    document.getElementById("p1").innerText = isAnnual ? "$8" : "$10";
+    document.getElementById("p2").innerText = isAnnual ? "$16" : "$20";
+    document.getElementById("p3").innerText = isAnnual ? "$40" : "$50";
+  }
+
+  function handleRegistration(e) {
+    e.preventDefault();
+    document.getElementById("pilotRegistration").style.display = "none";
+    document.getElementById("successBanner").style.display = "block";
+  }
+
+  window.onload = function() {
+    switchSiteData();
+    checkActiveSession();
+  };
+</script>
+</body>
+</html>
