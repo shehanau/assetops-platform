@@ -1,4 +1,4 @@
-import { AssetOpsActiveEngine, ScannedAssetContext } from "./teams/activeEngine.ts";
+import { AssetOpsActiveEngine, ScannedAssetContext } from "./teams/activeEngine";
 
 const engine = new AssetOpsActiveEngine();
 
