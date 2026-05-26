@@ -1,0 +1,26 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.15/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.15",
+  "id": "com.assetops.au.teamsapp",
+  "version": "1.1.0",
+  "developer": {
+    "name": "AssetOps Australia",
+    "websiteUrl": "https://assetops.com.au",
+    "privacyUrl": "https://assetops.com.au/privacy"
+  },
+  "name": {
+    "short": "AssetOps Active Hub",
+    "full": "AssetOps - Active Microsoft Asset Guard"
+  },
+  "description": {
+    "short": "Automated scanning for SIMs, laptops, and vehicles in Teams.",
+    "full": "An active enforcement layer that syncs mobile barcode scans and Entra ID tokens directly with your SharePoint infrastructure."
+  },
+  "permissions": ["identityprovider"],
+  "devicePermissions": ["camera"],
+  "validDomains": ["*.assetops.com.au", "login.microsoftonline.com"],
+  "webApplicationInfo": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "resource": "api://assetops.com.au"
+  }
+}
